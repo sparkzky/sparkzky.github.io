@@ -1,6 +1,9 @@
 - title: Twitter
-  url: https://twitter.com/ngzhio
+  url: https://twitter.com/sparkzky
   icon: fab fa-twitter
 - title: GitHub
-  url: https://github.com/ngzhio/jekyll-theme-hamilton
+  url: https://github.com/sparkzky
   icon: fab fa-github
+-title: Steam
+  url: https://steamcommunity.com/profiles/76561199526791096/
+  icon: fab fa-steam
