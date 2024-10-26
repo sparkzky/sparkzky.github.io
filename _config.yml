@@ -1,8 +1,8 @@
-title: Hamilton
-description: A minimal and beautiful Jekyll theme best for writing and note-taking.
-author: Shangzhi Huang
+title: Spark
+description: Nothing
+author: Sparkzky
 avatar: /logo.png
-email: ngzhio@gmail.com
+email: sparkhhhhhhhhhh@outlook.com
 
 plugins:
   - jekyll-seo-tag
@@ -34,10 +34,10 @@ twitter:
   card: summary
 logo: logo.png
 social:
-  name: Shangzhi Huang
+  name: Sparkzky
   links:
-    - https://twitter.com/ngzhio
-    - https://www.facebook.com/ngzhio
-    - https://github.com/ngzhio
+    - https://twitter.com/sparkzky
+    - https://www.facebook.com/sparkzky
+    - https://github.com/sparkzky
 google_site_verification: u4WXQl0Eu66rsQo2kRdCNx
-lang: en
+lang: zh
