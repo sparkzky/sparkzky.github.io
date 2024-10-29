@@ -1,3 +1,8 @@
+---
+layout: post
+title: "信号处理"
+categories: kernel
+---
 
 ---
 # 信号发送与处理详解
