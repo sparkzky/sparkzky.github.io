@@ -27,6 +27,10 @@ pub struct SigPending {
 - 如果进程没有为该信号设置信号处理函数，内核会执行默认的信号处理动作（如终止进程、忽略信号等）。
 ## 3. [PR889](https://github.com/DragonOS-Community/DragonOS/pull/889)修复管道Bug的原因
 目前尚未实现系统调用重启机制，如果系统调用返回一个 `ERESTARTSYS` 错误，会导致系统调用无法完成，使得进程状态异常，进程可能会因为资源耗尽或其他原因而被终止。上述 PR 将返回的 `ERESTARTSYS` 错误直接转换为 `EINTR`，明确用户态程序需要重新执行系统调用以解决错误。
+
+上面说的是针对vfs的暂时的处理方法
+而对于pr中修复的pipe文件的问题，则是通过查看pipe_inode的情况来检查是否可读或可写，如果不可读不可写则会调用`wq_wait_event_interruptible!`宏来等待，使进程等待队列中睡眠，直到等待条件达成才会重新唤醒该进程，使进程重新进入执行状态，并且由于这个过程可以中断，仍可以kill进程
+这个时候如果kill进程的话则会返回结果`Err(SystemError::ERESTARTSYS)`，但是未实现系统调用重启机制，则仍是交给用户态程序处理
 ## 4. 如何复现 read、write 的问题
 以下代码模拟了 `read` 操作，展示了如何复现问题：
 ```rust
@@ -39,8 +43,9 @@ use std::os::unix::io::{AsRawFd, FromRawFd};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
+
 fn main() -> Result<()> {
-    // 创建并写入一个大文件
+    // Create and write to a large file
     let filename = "large_file.txt";
     {
         let mut file = File::create(filename)?;
@@ -48,49 +53,57 @@ fn main() -> Result<()> {
             writeln!(file, "This is a line of text.")?;
         }
     }
-    // 打开文件用于读取
+
+    // Open the file for reading
     let mut file = File::open(filename)?;
     let fd = file.as_raw_fd();
-    // 确保读取操作是阻塞的
+
+    // Ensure the read operation is blocking
     unsafe {
-        fcntl(fd, F_SETFL, 0); // 设置为阻塞模式
+        fcntl(fd, F_SETFL, 0); // Set to blocking mode
     }
-    // 用于存储读取的字节数据
-    let buffer = Arc::new(Mutex::new(vec![0u8; 1024])); // 使用更大的缓冲区
+
+    // Used to store the read byte data
+    let buffer = Arc::new(Mutex::new(vec![0u8; 1024])); // Use a larger buffer
     let buffer_clone = Arc::clone(&buffer);
-    // 线程1：模拟阻塞读取操作
+
+    // Thread 1: Simulate a blocking read operation
     let handle = thread::spawn(move || {
-        let mut file = unsafe { File::from_raw_fd(fd) }; // 从原始文件描述符创建文件
-        println!("开始阻塞读取操作...");
+        let mut file = unsafe { File::from_raw_fd(fd) }; // Create file from raw file descriptor
+        println!("Starting blocking read operation...");
         loop {
             let mut buffer_lock = buffer_clone.lock().unwrap();
             match file.read(&mut *buffer_lock) {
                 Ok(0) => {
-                    println!("没有更多数据可读，退出读取");
+                    println!("No more data to read, exiting read");
                     break;
                 }
                 Ok(n) => {
-                    // 输出读取的字节数，占用整行
-                    if n != 1024 {
-                        let output = format!("读取了 {} 字节", n);
-                        println!("{:<width$}", output, width = 80); // 根据需要调整宽度
-                    }
+                    // Output the number of bytes read, occupying the entire line
+                    //if n != 1024 {
+                        let output = format!("Read {} bytes", n);
+                        println!("{:<width$}", output, width = 80); // Adjust width as needed
+                    //}
                 }
                 Err(e) => {
-                    eprintln!("读取失败：{:?}", e);
+                    eprintln!("Read failed: {:?}", e);
                     break;
                 }
             }
         }
     });
-    // 线程2：延迟发送 SIGINT（Ctrl-C）信号以中断阻塞的 `read`
-    thread::sleep(Duration::new(0, 5_000));
-    println!("发送 SIGINT（Ctrl-C）信号以中断读取操作...");
+
+    // Thread 2: Delay sending SIGINT (Ctrl-C) signal to interrupt the blocking `read`
+    thread::sleep(Duration::new(0, 5_0000));
+    println!("Sending SIGINT (Ctrl-C) signal to interrupt read operation...");
     let pid = Pid::this();
-    kill(pid, Signal::SIGINT).expect("发送信号失败");
-    handle.join().expect("读取线程出错");
-    // 删除临时文件
-    remove_file(filename).expect("删除文件失败");
+    kill(pid, Signal::SIGINT).expect("Failed to send signal");
+
+    handle.join().expect("Error in read thread");
+
+    // Delete the temporary file
+    remove_file(filename).expect("Failed to delete file");
+
     Ok(())
 }
 ```
