@@ -40,22 +40,15 @@ let mainConfig = {
         link: "/sparkzky.github.io/cv.html"
       }
     ],
-    headTitle: ["暮春早夏的月亮", "原是情人的月亮，不比秋冬是诗人的月亮"],
+    headTitle: ["每想到一些天地都容纳不下的说法，心里就烧起烟霞"],
     friendLinks: [
-      {
-        name: "watercow",
-        link: "https://github.com/watercow/watercow.github.io/issues"
-      },
-      {
-        name: "ycjgg",
-        link: "https://ycjgg.github.io"
-      }
+      
     ],
     extraFooters: [
       {
         title: "",
         text: "Nothing",
-        link: "https://beian.miit.gov.cn/"
+        link: ""
       }
     ],
     pageCount: true
@@ -67,7 +60,7 @@ let mainConfig = {
       {
         rel: "icon",
         type: "image/png",
-        href: "https://avatars2.githubusercontent.com/u/16968934?s=460&v=4"
+        href: "https://avatars.githubusercontent.com/u/146502758?s=400&u=b8a39089c210f747787383af20846de9556386c8&v=4"
       }
     ]
   ]
