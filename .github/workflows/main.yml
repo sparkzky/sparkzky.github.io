@@ -45,3 +45,4 @@ jobs:
           pnpm action
           pnpm build
           pnpm run deploy
+          
