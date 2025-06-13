@@ -1,8 +1,3 @@
-
-/**
- * @file: custom config
- */
-
 let mainConfig = {
   vssueConfig: {
     owner: "sparkzky",
@@ -16,13 +11,14 @@ let mainConfig = {
     repo: "sparkzky.github.io",
     pushBranch: "master",
     email: "sparkhhhhhhhhhh@outlook.com",
-    filterUsers: ["146502758"]
+    filterUsers: ["sparkzky"]
   },
 
   title: "Sparkzky's Blog",
   description: "Nothing to be found",
   customDomain: "",
-  base: "/sparkzky.github.io/",
+  base: "/",
+  lang: "zh",
 
   slogan: {
     main: "Just",
