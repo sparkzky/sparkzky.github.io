@@ -1,0 +1,47 @@
+name: Blog
+
+on:
+  push:
+    branches:
+      - master
+  issues:
+    types:
+      [
+        opened,
+        closed,
+        edited,
+        milestoned,
+        labeled,
+        unlabeled,
+        reopened,
+        demilestoned,
+      ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions: write-all
+
+    strategy:
+      matrix:
+        node-version: [19.x]
+
+    steps:
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+      - uses: actions/checkout@v3
+        with:
+          repository: Yidadaa/Issue-Blog-With-Github-Action
+          ref: source
+      - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          wget https://raw.githubusercontent.com/sparkzky/sparkzky.github.io/master/.github/workflows/cv.md -O ./src/cv.md
+          wget https://raw.githubusercontent.com/sparkzky/sparkzky.github.io/master/.github/workflows/custom.js -O ./src/.vuepress/custom.js
+          pnpm i 
+          pnpm action
+          pnpm build
+          pnpm run deploy
