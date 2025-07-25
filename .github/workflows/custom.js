@@ -32,6 +32,10 @@ let mainConfig = {
         link: "/sparkzky.github.io"
       },
       {
+        name: "照片",
+        link: "/sparkzky.github.io/gallery"
+      },
+      {
         name: "Github",
         link: "https://github.com/sparkzky"
       },
