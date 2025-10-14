@@ -29,11 +29,11 @@ let mainConfig = {
     nav: [
       {
         name: "首页",
-        link: "/sparkzky.github.io"
+        link: "/"
       },
       {
         name: "照片",
-        link: "/sparkzky.github.io/gallery"
+        link: "/gallery"
       },
       {
         name: "Github",
@@ -41,7 +41,7 @@ let mainConfig = {
       },
       {
         name: "CV",
-        link: "/sparkzky.github.io/cv.html"
+        link: "/cv.html"
       }
     ],
     headTitle: ["每想到一些天地都容纳不下的说法，心里就烧起烟霞"],
