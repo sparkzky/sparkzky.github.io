@@ -42,6 +42,10 @@ let mainConfig = {
       {
         name: "CV",
         link: "/cv.html"
+      },
+      {
+        name: "TrendRadar",
+        link: "/TrendRadar"
       }
     ],
     headTitle: ["每想到一些天地都容纳不下的说法，心里就烧起烟霞"],
