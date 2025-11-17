@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>k3s + kata | Sparkzky&#39;s Blog</title>
+    <meta name="generator" content="VuePress 1.9.10">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/prism/9000.0.1/themes/prism.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/KaTeX/0.5.1/katex.min.css">
+    <script charset="utf-8" src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async="true"></script>
+    <link rel="icon" type="image/png" href="https://avatars.githubusercontent.com/u/146502758?s=400&amp;u=b8a39089c210f747787383af20846de9556386c8&amp;v=4">
+    <meta name="description" content="Nothing to be found">
+    
+    <link rel="preload" href="/assets/css/0.styles.4b99a074.css" as="style"><link rel="preload" href="/assets/js/app.80168d11.js" as="script"><link rel="preload" href="/assets/js/11.88e04224.js" as="script"><link rel="preload" href="/assets/js/4.7cdb5f40.js" as="script"><link rel="preload" href="/assets/js/8.cfd336e9.js" as="script"><link rel="preload" href="/assets/js/24.f6fd95c3.js" as="script"><link rel="preload" href="/assets/js/3.3e3144d0.js" as="script"><link rel="prefetch" href="/assets/js/10.a548df86.js"><link rel="prefetch" href="/assets/js/12.eccb1a13.js"><link rel="prefetch" href="/assets/js/13.5e3e252b.js"><link rel="prefetch" href="/assets/js/14.60947bc2.js"><link rel="prefetch" href="/assets/js/15.862a6dd7.js"><link rel="prefetch" href="/assets/js/16.67f24281.js"><link rel="prefetch" href="/assets/js/17.b5390948.js"><link rel="prefetch" href="/assets/js/18.1756a3b7.js"><link rel="prefetch" href="/assets/js/19.5e1e96c3.js"><link rel="prefetch" href="/assets/js/2.fec84398.js"><link rel="prefetch" href="/assets/js/20.b0ddaa18.js"><link rel="prefetch" href="/assets/js/21.d9c2026d.js"><link rel="prefetch" href="/assets/js/22.8885c5a0.js"><link rel="prefetch" href="/assets/js/23.782fda95.js"><link rel="prefetch" href="/assets/js/5.2e0d07ff.js"><link rel="prefetch" href="/assets/js/6.89ecbbf5.js"><link rel="prefetch" href="/assets/js/7.fbf4f751.js"><link rel="prefetch" href="/assets/js/9.7a5999da.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.4b99a074.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div><div class="header-wrap" data-v-33920667><div class="header page" data-v-33920667><div class="left" data-v-33920667><div class="motto" data-v-33920667></div> <div class="nav" data-v-33920667></div></div> <div class="right" data-v-33920667><div class="search-box" data-v-33920667><input aria-label="Search" placeholder="" autocomplete="off" spellcheck="false" value=""> <!----></div></div></div></div> <div class="page post-page"><div class="title"><div class="post-title">k3s + kata</div></div> <div class="info"><div class="author">sparkzky</div> <div class="date">2025/11/17</div> <div class="count"><span id="busuanzi_value_page_pv"></span> <span>views</span></div></div> <div class="post-content"><div class="content__default"><h1 id="k3s-kata"><a href="#k3s-kata" class="header-anchor">#</a> k3s + kata</h1> <h2 id="安装-k3s"><a href="#安装-k3s" class="header-anchor">#</a> 安装 k3s</h2> <div class="language- extra-class"><pre class="language-text"><code> curl -sfL https://get.k3s.io | sh - 
+</code></pre></div><h2 id="安装-helm"><a href="#安装-helm" class="header-anchor">#</a> 安装 Helm</h2> <div class="language- extra-class"><pre class="language-text"><code>curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+helm version # 验证
+</code></pre></div><h2 id="安装kata-deploy-会创建runtimeclass等等"><a href="#安装kata-deploy-会创建runtimeclass等等" class="header-anchor">#</a> 安装kata-deploy（会创建runtimeclass等等）</h2> <div class="language- extra-class"><pre class="language-text"><code>export VERSION=$(curl -sSL https://api.github.com/repos/kata-containers/kata-containers/releases/latest | jq .tag_name | tr -d '&quot;')
+export CHART=&quot;oci://ghcr.io/kata-containers/kata-deploy-charts/kata-deploy&quot;
+
+helm install kata-deploy &quot;${CHART}&quot; --version &quot;${VERSION}&quot;
+</code></pre></div><h2 id="配置containerd"><a href="#配置containerd" class="header-anchor">#</a> 配置containerd</h2> <p>k3s用的不是系统级的containerd，而是自身的，需要单独做配置</p> <p>配置文件路径为<code>/var/lib/rancher/k3s/agent/etc/containerd/config.toml</code>，但是这个文件是k3s自动生成的，不能对此进行更改，而是更改（手动创建）一个模板文件进行配置，路径为<code>/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl</code></p> <div class="language- extra-class"><pre class="language-text"><code>sudo cp  /var/lib/rancher/k3s/agent/etc/containerd/config.toml /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+sudo vim /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+</code></pre></div><p>加上如下配置</p> <div class="language- extra-class"><pre class="language-text"><code>[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.kata]
+  runtime_type = &quot;io.containerd.kata.v2&quot;
+
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.kata.options]
+  ConfigPath = &quot;/opt/kata/share/defaults/kata-containers/configuration-qemu.toml&quot;
+
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.kata-qemu]
+  runtime_type = &quot;io.containerd.kata.v2&quot;
+
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.kata-qemu.options]
+  ConfigPath = &quot;/opt/kata/share/defaults/kata-containers/configuration-qemu.toml&quot;
+</code></pre></div><h2 id="验证"><a href="#验证" class="header-anchor">#</a> 验证</h2> <p>创建一个test.yaml</p> <div class="language- extra-class"><pre class="language-text"><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: test-kata
+spec:
+  runtimeClassName: kata-qemu
+  containers:
+    - name: sleep
+      image: busybox
+      command: [&quot;sleep&quot;, &quot;3600&quot;]
+  nodeSelector:
+    katacontainers.io/kata-runtime: &quot;true&quot;
+</code></pre></div><p>然后<code>kubectl apply -f test.yaml</code>即可</p></div></div> <!----></div> <div class="footer" data-v-3ef679b5><div class="footer-content page" data-v-3ef679b5><div class="left" data-v-3ef679b5><div class="footer-title" data-v-3ef679b5>FRIEND LINKS</div> <div class="links footer-text" data-v-3ef679b5></div> <div class="footer-text" data-v-3ef679b5><span id="busuanzi_container_site_pv" class="footer-count" data-v-3ef679b5><span id="busuanzi_value_site_pv" data-v-3ef679b5></span> <span id="busuanzi_value_site_uv" data-v-3ef679b5></span></span> <div class="counter" data-v-3ef679b5><div class="counter-title" data-v-3ef679b5>PAGE VIEWS</div> <div class="counter-content" data-v-3ef679b5><span class="counter-number" data-v-3ef679b5>0</span><span class="counter-number" data-v-3ef679b5>0</span><span class="counter-number" data-v-3ef679b5>0</span><span class="counter-number" data-v-3ef679b5>0</span><span class="counter-number" data-v-3ef679b5>0</span></div></div> <div class="counter" data-v-3ef679b5><div class="counter-title" data-v-3ef679b5>USER VIEWS</div> <div class="counter-content" data-v-3ef679b5><span class="counter-number" data-v-3ef679b5>0</span><span class="counter-number" data-v-3ef679b5>0</span><span class="counter-number" data-v-3ef679b5>0</span><span class="counter-number" data-v-3ef679b5>0</span><span class="counter-number" data-v-3ef679b5>0</span></div></div></div> </div> <div class="right" data-v-3ef679b5><div class="footer-title power" data-v-3ef679b5>POWERED BY</div> <a href="https://github.com/Yidadaa/Issue-Blog-With-Github-Action" class="logo" data-v-3ef679b5>ISSUE BLOG</a></div></div></div></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.80168d11.js" defer></script><script src="/assets/js/11.88e04224.js" defer></script><script src="/assets/js/4.7cdb5f40.js" defer></script><script src="/assets/js/8.cfd336e9.js" defer></script><script src="/assets/js/24.f6fd95c3.js" defer></script><script src="/assets/js/3.3e3144d0.js" defer></script>
+  </body>
+</html>
